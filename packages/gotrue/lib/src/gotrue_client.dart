@@ -288,7 +288,7 @@ class GoTrueClient {
     );
 
     final response = await _fetch.request(
-      '$_url/pin/set',
+      '$_url/pin',
       RequestMethodType.post,
       options: options,
     );
