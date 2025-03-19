@@ -266,6 +266,36 @@ class GoTrueClient {
     return authResponse;
   }
 
+  Future<dynamic> setPin({
+    required String pin,
+    required String deviceId,
+  }) async {
+    final accessToken = currentSession?.accessToken;
+    if (accessToken == null) {
+      throw AuthSessionMissingException();
+    }
+
+
+    final body = {
+      "pin": pin,
+      "device_id": deviceId,
+    };
+
+    final options = GotrueRequestOptions(
+      headers: _headers,
+      body: body,
+      jwt: accessToken,
+    );
+
+    final response = await _fetch.request(
+      '$_url/pin/set',
+      RequestMethodType.post,
+      options: options,
+    );
+
+    return response;
+  }
+
   /// Log in an existing user with an email and password or phone and password.
   Future<AuthResponse> signInWithPassword({
     String? email,
