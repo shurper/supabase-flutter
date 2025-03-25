@@ -266,7 +266,7 @@ class GoTrueClient {
     return authResponse;
   }
 
-  Future<dynamic> setPin({
+  Future<dynamic> pin({
     required String pin,
     required String deviceId,
   }) async {
@@ -289,6 +289,36 @@ class GoTrueClient {
 
     final response = await _fetch.request(
       '$_url/pin',
+      RequestMethodType.post,
+      options: options,
+    );
+
+    return response;
+  }
+
+  Future<dynamic> setPin({
+    required String pin,
+    required String deviceId,
+  }) async {
+    final accessToken = currentSession?.accessToken;
+    if (accessToken == null) {
+      throw AuthSessionMissingException();
+    }
+
+
+    final body = {
+      "pin": pin,
+      "device_id": deviceId,
+    };
+
+    final options = GotrueRequestOptions(
+      headers: _headers,
+      body: body,
+      jwt: accessToken,
+    );
+
+    final response = await _fetch.request(
+      '$_url/setpin',
       RequestMethodType.post,
       options: options,
     );
