@@ -266,7 +266,7 @@ class GoTrueClient {
     return authResponse;
   }
 
-  Future<dynamic> pin({
+  Future<dynamic> verifyPin({
     required String pin,
     required String deviceId,
   }) async {
@@ -318,8 +318,8 @@ class GoTrueClient {
     );
 
     final response = await _fetch.request(
-      '$_url/setpin',
-      RequestMethodType.post,
+      '$_url/pin',
+      RequestMethodType.put,
       options: options,
     );
 
