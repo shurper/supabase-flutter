@@ -266,35 +266,40 @@ class GoTrueClient {
     return authResponse;
   }
 
-  Future<dynamic> verifyPin({
-    required String pin,
-    required String deviceId,
-  }) async {
-    final accessToken = currentSession?.accessToken;
-    if (accessToken == null) {
-      throw AuthSessionMissingException();
-    }
+  Future<AuthResponse> verifyPin({
+  required String pin,
+  required String deviceId,
+  String? captchaToken,
+}) async {
+  assert(pin.isNotEmpty, 'PIN code cannot be empty');
+  assert(deviceId.isNotEmpty, 'Device ID cannot be empty');
 
+  final body = {
+    'pin': pin,
+    'device_id': deviceId,
+    if (captchaToken != null) 'gotrue_meta_security': {'captcha_token': captchaToken},
+  };
 
-    final body = {
-      "pin": pin,
-      "device_id": deviceId,
-    };
+  final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
+  final response = await _fetch.request(
+    '$_url/pin',
+    RequestMethodType.post,
+    options: fetchOptions,
+  );
 
-    final options = GotrueRequestOptions(
-      headers: _headers,
-      body: body,
-      jwt: accessToken,
+  final authResponse = AuthResponse.fromJson(response);
+
+  if (authResponse.session == null) {
+    throw AuthException(
+      'An error occurred during PIN verification',
     );
-
-    final response = await _fetch.request(
-      '$_url/pin',
-      RequestMethodType.post,
-      options: options,
-    );
-
-    return response;
   }
+
+  _saveSession(authResponse.session!);
+  notifyAllSubscribers(AuthChangeEvent.signedIn);
+
+  return authResponse;
+}
 
   Future<dynamic> setPin({
     required String pin,
