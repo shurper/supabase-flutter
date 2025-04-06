@@ -64,6 +64,16 @@ class GenerateLinkResponse {
         user = User.fromJson(json)!;
 }
 
+class SetPinResponse {
+  final String message;
+  final String deviceId;
+
+  SetPinResponse({
+    required this.message,
+    required this.deviceId,
+  });
+}
+
 class GenerateLinkProperties {
   /// The email link to send to the user.
   /// The action_link follows the following format: auth/v1/verify?type={verification_type}&token={hashed_token}&redirect_to={redirect_to}

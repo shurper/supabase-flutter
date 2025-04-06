@@ -299,7 +299,7 @@ class GoTrueClient {
     return authResponse;
   }
 
-  Future<dynamic> setPin({
+  Future<SetPinResponse> setPin({
     required String pin,
     required String deviceId,
   }) async {
@@ -321,24 +321,25 @@ class GoTrueClient {
     );
 
     try {
-      _log.info('SetPin response');
-      final response = await _fetch.request(
+        final response = await _fetch.request(
         '$_url/pin',
         RequestMethodType.put,
         options: options,
       );
-      _log.info('SetPin response is finished');
+      return SetPinResponse.fromJson(response);
+
     } on AuthException catch (error) {
-      _log.info('SetPin response exception');
-      debugPrint(error.toString());
-      if (error.error_code != 'pin_reauthentication_needed') {
-        _removeSession();
-        await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
-        notifyAllSubscribers(AuthChangeEvent.signedOut);
-      }
+        _log.info('SetPin response exception');
+        debugPrint(error.toString());
+        if (error.error_code != 'pin_reauthentication_needed') {
+          _removeSession();
+          await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
+          notifyAllSubscribers(AuthChangeEvent.signedOut);
+        }
+        rethrow;
     }    
 
-    return response;
+
   }
 
   /// Log in an existing user with an email and password or phone and password.
