@@ -322,11 +322,19 @@ class GoTrueClient {
       jwt: accessToken,
     );
 
-    final response = await _fetch.request(
-      '$_url/pin',
-      RequestMethodType.put,
-      options: options,
-    );
+     try {
+        final response = await _fetch.request(
+          '$_url/pin',
+          RequestMethodType.put,
+          options: options,
+        );
+      } on AuthException catch (error) {
+        if (error.error_code != 'pin_reauthentication_needed') {
+          _removeSession();
+          await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
+          notifyAllSubscribers(AuthChangeEvent.signedOut);
+        }
+      }    
 
     return response;
   }
