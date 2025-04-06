@@ -330,7 +330,6 @@ class GoTrueClient {
 
     } on AuthException catch (error) {
         _log.info('SetPin response exception');
-        debugPrint(error.toString());
         if (error.code != 'pin_reauthentication_needed') {
           _removeSession();
           await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');

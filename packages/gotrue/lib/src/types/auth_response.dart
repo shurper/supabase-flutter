@@ -72,7 +72,15 @@ class SetPinResponse {
     required this.message,
     required this.deviceId,
   });
+
+  factory SetPinResponse.fromJson(Map<String, dynamic> json) {
+    return SetPinResponse(
+      message: json['message'] as String,
+      deviceId: json['device_id'] as String,
+    );
+  }
 }
+
 
 class GenerateLinkProperties {
   /// The email link to send to the user.
