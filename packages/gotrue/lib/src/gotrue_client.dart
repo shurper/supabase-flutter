@@ -304,10 +304,10 @@ class GoTrueClient {
     required String deviceId,
   }) async {
     final accessToken = currentSession?.accessToken;
+    
     if (accessToken == null) {
       throw AuthSessionMissingException();
     }
-
 
     final body = {
       "pin": pin,
@@ -321,23 +321,26 @@ class GoTrueClient {
     );
 
     try {
-        final response = await _fetch.request(
+
+      final response = await _fetch.request(
         '$_url/pin',
         RequestMethodType.put,
         options: options,
       );
+
       return SetPinResponse.fromJson(response);
 
     } on AuthException catch (error) {
-        _log.info('SetPin response exception');
+
         if (error.code == 'pin_reauthentication_needed') {
           _removeSession();
           await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
           notifyAllSubscribers(AuthChangeEvent.signedOut);
         }
-        rethrow;
-    }    
 
+        rethrow;
+
+    }
 
   }
 
