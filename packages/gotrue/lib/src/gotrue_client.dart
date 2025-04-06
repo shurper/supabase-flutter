@@ -266,6 +266,7 @@ class GoTrueClient {
     return authResponse;
   }
 
+  /// Verifies the provided PIN code for the given device ID.
   Future<AuthResponse> verifyPin({
     required String pin,
     required String deviceId,
@@ -277,7 +278,8 @@ class GoTrueClient {
     final body = {
       'pin': pin,
       'device_id': deviceId,
-      if (captchaToken != null) 'gotrue_meta_security': {'captcha_token': captchaToken},
+      if (captchaToken != null)
+        'gotrue_meta_security': {'captcha_token': captchaToken},
     };
 
     final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
@@ -299,19 +301,20 @@ class GoTrueClient {
     return authResponse;
   }
 
+  /// Sets a new PIN code for the current authenticated user and device.
   Future<SetPinResponse> setPin({
     required String pin,
     required String deviceId,
   }) async {
     final accessToken = currentSession?.accessToken;
-    
+
     if (accessToken == null) {
       throw AuthSessionMissingException();
     }
 
     final body = {
-      "pin": pin,
-      "device_id": deviceId,
+      'pin': pin,
+      'device_id': deviceId,
     };
 
     final options = GotrueRequestOptions(
@@ -321,7 +324,6 @@ class GoTrueClient {
     );
 
     try {
-
       final response = await _fetch.request(
         '$_url/pin',
         RequestMethodType.put,
@@ -329,19 +331,17 @@ class GoTrueClient {
       );
 
       return SetPinResponse.fromJson(response);
-
     } on AuthException catch (error) {
+      if (error.code == 'pin_reauthentication_needed') {
+        _removeSession();
+        await _asyncStorage?.removeItem(
+          key: '${Constants.defaultStorageKey}-code-verifier',
+        );
+        notifyAllSubscribers(AuthChangeEvent.signedOut);
+      }
 
-        if (error.code == 'pin_reauthentication_needed') {
-          _removeSession();
-          await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
-          notifyAllSubscribers(AuthChangeEvent.signedOut);
-        }
-
-        rethrow;
-
+      rethrow;
     }
-
   }
 
   /// Log in an existing user with an email and password or phone and password.
