@@ -267,39 +267,37 @@ class GoTrueClient {
   }
 
   Future<AuthResponse> verifyPin({
-  required String pin,
-  required String deviceId,
-  String? captchaToken,
-}) async {
-  assert(pin.isNotEmpty, 'PIN code cannot be empty');
-  assert(deviceId.isNotEmpty, 'Device ID cannot be empty');
+    required String pin,
+    required String deviceId,
+    String? captchaToken,
+  }) async {
+    assert(pin.isNotEmpty, 'PIN code cannot be empty');
+    assert(deviceId.isNotEmpty, 'Device ID cannot be empty');
 
-  final body = {
-    'pin': pin,
-    'device_id': deviceId,
-    if (captchaToken != null) 'gotrue_meta_security': {'captcha_token': captchaToken},
-  };
+    final body = {
+      'pin': pin,
+      'device_id': deviceId,
+      if (captchaToken != null) 'gotrue_meta_security': {'captcha_token': captchaToken},
+    };
 
-  final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
-  final response = await _fetch.request(
-    '$_url/pin',
-    RequestMethodType.post,
-    options: fetchOptions,
-  );
-
-  final authResponse = AuthResponse.fromJson(response);
-
-  if (authResponse.session == null) {
-    throw AuthException(
-      'An error occurred during PIN verification',
+    final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
+    final response = await _fetch.request(
+      '$_url/pin',
+      RequestMethodType.post,
+      options: fetchOptions,
     );
+
+    final authResponse = AuthResponse.fromJson(response);
+
+    if (authResponse.session == null) {
+      throw AuthException('An error occurred during PIN verification');
+    }
+
+    _saveSession(authResponse.session!);
+    notifyAllSubscribers(AuthChangeEvent.signedIn);
+
+    return authResponse;
   }
-
-  _saveSession(authResponse.session!);
-  notifyAllSubscribers(AuthChangeEvent.signedIn);
-
-  return authResponse;
-}
 
   Future<dynamic> setPin({
     required String pin,
@@ -322,19 +320,23 @@ class GoTrueClient {
       jwt: accessToken,
     );
 
-     try {
-        final response = await _fetch.request(
-          '$_url/pin',
-          RequestMethodType.put,
-          options: options,
-        );
-      } on AuthException catch (error) {
-        if (error.error_code != 'pin_reauthentication_needed') {
-          _removeSession();
-          await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
-          notifyAllSubscribers(AuthChangeEvent.signedOut);
-        }
-      }    
+    try {
+      _log.info('SetPin response');
+      final response = await _fetch.request(
+        '$_url/pin',
+        RequestMethodType.put,
+        options: options,
+      );
+      _log.info('SetPin response is finished');
+    } on AuthException catch (error) {
+      _log.info('SetPin response exception');
+      debugPrint(error.toString());
+      if (error.error_code != 'pin_reauthentication_needed') {
+        _removeSession();
+        await _asyncStorage?.removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
+        notifyAllSubscribers(AuthChangeEvent.signedOut);
+      }
+    }    
 
     return response;
   }
