@@ -359,8 +359,8 @@ class GoTrueClient {
 
       final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
       final response = await _fetch.request(
-        '$_url/pin',
-        RequestMethodType.get,
+        '$_url/pin/has',
+        RequestMethodType.post,
         options: fetchOptions,
       );
       return HasPinResponse.fromJson(response);
