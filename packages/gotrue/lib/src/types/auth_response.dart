@@ -81,6 +81,22 @@ class SetPinResponse {
   }
 }
 
+class HasPinResponse {
+  final bool hasPin;
+  final String deviceId;
+
+  HasPinResponse({
+    required this.hasPin,
+    required this.deviceId,
+  });
+
+  factory HasPinResponse.fromJson(Map<String, dynamic> json) {
+    return HasPinResponse(
+      hasPin: json['has_pin'] as bool,
+      deviceId: json['device_id'] as String,
+    );
+  }
+}
 
 class GenerateLinkProperties {
   /// The email link to send to the user.
