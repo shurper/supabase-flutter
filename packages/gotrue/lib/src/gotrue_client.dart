@@ -307,7 +307,7 @@ class GoTrueClient {
         await _asyncStorage?.removeItem(
           key: '${Constants.defaultStorageKey}-code-verifier',
         );
-        notifyAllSubscribers(AuthChangeEvent.signedOut);
+        notifyAllSubscribers(AuthChangeEvent.signedIn);
       }
 
       rethrow;
