@@ -283,22 +283,35 @@ class GoTrueClient {
     };
 
     final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
-    final response = await _fetch.request(
-      '$_url/pin',
-      RequestMethodType.post,
-      options: fetchOptions,
-    );
 
-    final authResponse = AuthResponse.fromJson(response);
+    try {
+      final response = await _fetch.request(
+        '$_url/pin',
+        RequestMethodType.post,
+        options: fetchOptions,
+      );
 
-    if (authResponse.session == null) {
-      throw AuthException('An error occurred during PIN verification');
+      final authResponse = AuthResponse.fromJson(response);
+
+      if (authResponse.session == null) {
+        throw AuthException('An error occurred during PIN verification');
+      }
+
+      _saveSession(authResponse.session!);
+      notifyAllSubscribers(AuthChangeEvent.signedIn);
+
+      return authResponse;
+    } on AuthException catch (error) {
+      if (error.code == 'pin_blocked') {
+        _removeSession();
+        await _asyncStorage?.removeItem(
+          key: '${Constants.defaultStorageKey}-code-verifier',
+        );
+        notifyAllSubscribers(AuthChangeEvent.signedOut);
+      }
+
+      rethrow;
     }
-
-    _saveSession(authResponse.session!);
-    notifyAllSubscribers(AuthChangeEvent.signedIn);
-
-    return authResponse;
   }
 
   /// Sets a new PIN code for the current authenticated user and device.
