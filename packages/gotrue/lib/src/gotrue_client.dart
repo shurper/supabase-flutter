@@ -307,7 +307,7 @@ class GoTrueClient {
         await _asyncStorage?.removeItem(
           key: '${Constants.defaultStorageKey}-code-verifier',
         );
-        notifyAllSubscribers(AuthChangeEvent.signedIn);
+        notifyAllSubscribers(AuthChangeEvent.pinBlocked);
       }
 
       rethrow;
@@ -342,6 +342,8 @@ class GoTrueClient {
         RequestMethodType.put,
         options: options,
       );
+
+      notifyAllSubscribers(AuthChangeEvent.pinCreated);
 
       return SetPinResponse.fromJson(response);
     } on AuthException catch (error) {

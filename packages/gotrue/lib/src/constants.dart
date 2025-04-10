@@ -40,6 +40,8 @@ enum AuthChangeEvent {
   signedOut('SIGNED_OUT'),
   tokenRefreshed('TOKEN_REFRESHED'),
   userUpdated('USER_UPDATED'),
+  pinBlocked('PIN_BLOCKED'),
+  pinCreated('PIN_CREATED'),
 
   @Deprecated('Was never in use and might be removed in the future.')
   userDeleted(''),
