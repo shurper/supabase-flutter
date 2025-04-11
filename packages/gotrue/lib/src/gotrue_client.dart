@@ -302,7 +302,7 @@ class GoTrueClient {
 
       return authResponse;
     } on AuthException catch (error) {
-      if (error.code == 'pin_blocked') {
+      if (error.code == 'pin_blocked' || error.code == 'pin_expired' ) {
         _removeSession();
         await _asyncStorage?.removeItem(
           key: '${Constants.defaultStorageKey}-code-verifier',
@@ -379,6 +379,32 @@ class GoTrueClient {
         options: fetchOptions,
       );
       return HasPinResponse.fromJson(response);
+    } catch (error, stack) {
+      notifyException(error, stack);
+      rethrow;
+    }
+  }
+
+  /// Deletes all PIN codes for this device identifier.
+  Future<DeletePinResponse> deletePin({
+    required String deviceId,
+    String? captchaToken,
+  }) async {
+    assert(deviceId.isNotEmpty, 'Device ID cannot be empty');
+    try {
+      final body = {
+        'device_id': deviceId,
+        if (captchaToken != null)
+          'gotrue_meta_security': {'captcha_token': captchaToken},
+      };
+
+      final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
+      final response = await _fetch.request(
+        '$_url/pin/delete',
+        RequestMethodType.post,
+        options: fetchOptions,
+      );
+      return DeletePinResponse.fromJson(response);
     } catch (error, stack) {
       notifyException(error, stack);
       rethrow;

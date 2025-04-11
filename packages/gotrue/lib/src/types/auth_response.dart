@@ -81,6 +81,23 @@ class SetPinResponse {
   }
 }
 
+class DeletePinResponse {
+  final String message;
+  final String deviceId;
+
+  DeletePinResponse({
+    required this.message,
+    required this.deviceId,
+  });
+
+  factory DeletePinResponse.fromJson(Map<String, dynamic> json) {
+    return DeletePinResponse(
+      message: json['message'] as String,
+      deviceId: json['device_id'] as String,
+    );
+  }
+}
+
 class HasPinResponse {
   final bool hasPin;
   final String deviceId;
