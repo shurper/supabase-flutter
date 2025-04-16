@@ -303,10 +303,6 @@ class GoTrueClient {
       return authResponse;
     } on AuthException catch (error) {
       if (error.code == 'pin_blocked' || error.code == 'pin_expired' ) {
-        _removeSession();
-        await _asyncStorage?.removeItem(
-          key: '${Constants.defaultStorageKey}-code-verifier',
-        );
         notifyAllSubscribers(AuthChangeEvent.pinBlocked);
       }
 
@@ -404,6 +400,7 @@ class GoTrueClient {
         RequestMethodType.post,
         options: fetchOptions,
       );
+      notifyAllSubscribers(AuthChangeEvent.pinBlocked);
       return DeletePinResponse.fromJson(response);
     } catch (error, stack) {
       notifyException(error, stack);
